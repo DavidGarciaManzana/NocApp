@@ -1,20 +1,23 @@
 import {CronAdapter} from "./third_party_apis/cron_adapter/cron.adapter";
 import {CheckService} from "../domain(business_logic)/use_cases/check_service.usecase";
-import {FileSystemDatasource} from "../infrastructure(code_or_process)/datasources/file_system.datasource";
-import {LogImplementationRepository} from "../infrastructure(code_or_process)/repositories/log_implementation.repository"
+import {FileSystemDatasource} from "../infrastructure(implementation_or_process)/datasources/file_system.datasource";
+import {LogImplementationRepository} from "../infrastructure(implementation_or_process)/repositories/log_implementation.repository"
 import {PORT} from "../config/env_adapter/dotenv";
+import {PrismaClient} from "@prisma/client";
+import {PostgresLogDatasource} from "../infrastructure(implementation_or_process)/datasources/postgres_log.datasource";
+import {CheckServiceMultiple} from "../domain(business_logic)/use_cases/check_service_multiple.usecase";
 const fileSystemLogRepository:LogImplementationRepository = new LogImplementationRepository(
-    new FileSystemDatasource(),
-    // new mongoLogDS(),
-    // new SQLserverDS()
+    new FileSystemDatasource()
 )
-
+const posgresSystemLogRepository:LogImplementationRepository = new LogImplementationRepository(
+    new PostgresLogDatasource()
+)
 export class Server{
     static Start(){
         console.log('Server running...')
-        console.log(PORT)
-        const newServiceChecker = new  CheckService(
-            fileSystemLogRepository,
+
+        const newServiceChecker = new  CheckServiceMultiple(
+            [fileSystemLogRepository,posgresSystemLogRepository],
             ()=>{
                 console.log('todo bien')
             },
